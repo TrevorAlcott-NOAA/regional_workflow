@@ -291,9 +291,11 @@ MODULES_RUN_TASK_FP script.
 
     <dependency>
       <sh>
-        {% for f in range(0, fcst_len_hrs+1, 3) -%}
-          test $(find <cyclestr offset="-3:00:00">/misc/whome/rtrr/rap/@Y@m@d@H/postprd/</cyclestr> -name wrfnat_rr_{{ "%02d"|format(extrn_mdl_lbcs_offset_hrs+f) }}.grib2 -mmin +5 )
+        test $(find <cyclestr offset="-{{ extrn_mdl_lbcs_offset_hrs }}:00:00">/misc/whome/rtrr/rap/@Y@m@d@H/postprd/</cyclestr>\
+        \( -name wrfnat_rr_{{ "%02d"|format(extrn_mdl_lbcs_offset_hrs) }}.grib2 -mmin +5 \
+        {% for f in range(extrn_mdl_lbcs_offset_hrs+extrn_mdl_lbcs_update_interval, fcst_len_hrs+extrn_mdl_lbcs_offset_hrs+1, extrn_mdl_lbcs_update_interval) -%} -o -name wrfnat_rr_{{ "%02d"|format(f) }}.grib2 -mmin +5 \
         {% endfor -%}
+        \) | wc -l ) == {{ fcst_len_hrs // extrn_mdl_lbcs_update_interval + 1 }}
     </sh>
     </dependency>
 
