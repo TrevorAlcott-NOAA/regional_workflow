@@ -349,6 +349,13 @@ WFLOW_LAUNCH_LOG_FN="log.launch_FV3LAM_wflow"
 # two-digit string representing an integer that is less than or equal to
 # 23, e.g. "00", "03", "12", "23".
 #
+# DACYCL_HRS:
+# An array containing the hours of the day at which to launch cycled forecasts.
+# Forecasts are launched at these hours on each day from DATE_FIRST_CYCL
+# to DATE_LAST_CYCL, inclusive.  Each element of this array must be a 
+# two-digit string representing an integer that is less than or equal to
+# 23, e.g. "00", "03", "12", "23".
+#
 # FCST_LEN_HRS:
 # The length of each forecast, in integer hours.
 #
@@ -363,6 +370,7 @@ WFLOW_LAUNCH_LOG_FN="log.launch_FV3LAM_wflow"
 DATE_FIRST_CYCL="YYYYMMDD"
 DATE_LAST_CYCL="YYYYMMDD"
 CYCL_HRS=( "HH1" "HH2" )
+DACYCL_HRS=( )
 FCST_LEN_HRS="24"
 DA_CYCLE_INTERV="3"
 RESTART_INTERVAL="3,6"
