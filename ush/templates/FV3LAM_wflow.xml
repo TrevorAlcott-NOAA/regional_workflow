@@ -358,7 +358,7 @@ MODULES_RUN_TASK_FP script.
   {%- if do_dacycle %}
   <task name="&MAKE_LBCS_TN;{{ uscore_ensmem_name }}" cycledefs="forecast,dacycle" maxtries="1">
   {% else %}
-  <task name="&MAKE_LBCS_TN;{{ uscore_ensmem_name }}" cycledefs="forceast" maxtries="1">
+  <task name="&MAKE_LBCS_TN;{{ uscore_ensmem_name }}" cycledefs="forecast" maxtries="1">
   {% endif %}
 
     &RSRV_DEFAULT;
