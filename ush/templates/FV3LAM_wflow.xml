@@ -110,15 +110,11 @@ tasks; and the "FCST" type is used for the RUN_FCST_TN task.
 {%- if (run_task_make_grid or run_task_make_orog or run_task_make_sfc_climo) %}
   <cycledef group="at_start">{{ cdate_first_cycl.strftime("%M %H %d %m %Y *") }}</cycledef>
 {% endif %}
-{% for cycl_hr in cycl_hrs %}
-  <cycledef group="{{cycl_hr}}Z">{{ cdate_first_cycl.strftime("%Y%m%d") }}{{ cycl_hr }}00 {{ cdate_last_cycl.strftime("%Y%m%d") }}{{ cycl_hr }}00 24:00:00</cycledef>
-{%- endfor %}
+  <cycledef group="forecast">00 {% for cycl_hr in cycl_hrs[:-1] -%} {{ cycl_hr }},{%- endfor -%}{{ cycl_hrs[-1] }} * * {{ cdate_first_cycl.strftime("%Y") }}-{{ (cdate_last_cycl.strftime("%Y")|int)+1 }} *</cycledef>
 {%- if do_dacycle %}
-  {% for dacycl_hr in dacycl_hrs %}
-  <cycledef group="{{dacycl_hr}}Z">{{ cdate_first_cycl.strftime("%Y%m%d") }}{{ dacycl_hr }}00 {{ cdate_last_cycl.strftime("%Y%m%d") }}{{ dacycl_hr }}00 24:00:00</cycledef>
-  {%- endfor %}
+  <cycledef group="dacycle">00 {% for dacycl_hr in dacycl_hrs[:-1] -%} {{ dacycl_hr }},{%- endfor -%}{{ dacycl_hrs[-1] }} * * {{ cdate_first_cycl.strftime("%Y") }}-{{ (cdate_last_cycl.strftime("%Y")|int)+1 }} *</cycledef>
 {% endif %}
-  <cycledef group="archive">{{ cdate_first_arch.strftime("%Y%m%d%H%M") }} {{ cdate_last_arch.strftime("%Y%m%d%H%M") }} 24:00:00</cycledef> 
+  <cycledef group="archive">00 {{ cdate_first_arch.strftime("%H") }} * * {{ cdate_first_cycl.strftime("%Y") }}-{{ (cdate_last_cycl.strftime("%Y")|int)+1 }} *</cycledef> 
 
   <log>
     <cyclestr>&LOGDIR;/FV3LAM_wflow.log</cyclestr>
@@ -238,7 +234,7 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 ************************************************************************
 -->
-  <task name="&GET_EXTRN_ICS_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="1">
+  <task name="&GET_EXTRN_ICS_TN;" cycledefs="forecast" maxtries="1">
 
     &RSRV_DEFAULT;
     &WALL_LIMIT_PRE;
@@ -267,9 +263,9 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 -->
   {%- if do_dacycle %}
-  <task name="&GET_EXTRN_LBCS_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}" maxtries="1">
+  <task name="&GET_EXTRN_LBCS_TN;" cycledefs="forecast,dacycle" maxtries="1">
   {% else %}
-  <task name="&GET_EXTRN_LBCS_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="1">
+  <task name="&GET_EXTRN_LBCS_TN;" cycledefs="forecast" maxtries="1">
   {% endif %}
 
     &RSRV_DEFAULT;
@@ -315,7 +311,7 @@ MODULES_RUN_TASK_FP script.
 {%- endfor %} </var>
 {%- endif %}
 
-  <task name="&MAKE_ICS_TN;{{ uscore_ensmem_name }}" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="1">
+  <task name="&MAKE_ICS_TN;{{ uscore_ensmem_name }}" cycledefs="forecast" maxtries="1">
 
     &RSRV_DEFAULT;
     &WALL_LIMIT_PRE;
@@ -360,9 +356,9 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 --> 
   {%- if do_dacycle %}
-  <task name="&MAKE_LBCS_TN;{{ uscore_ensmem_name }}" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}" maxtries="1">
+  <task name="&MAKE_LBCS_TN;{{ uscore_ensmem_name }}" cycledefs="forecast,dacycle" maxtries="1">
   {% else %}
-  <task name="&MAKE_LBCS_TN;{{ uscore_ensmem_name }}" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="1">
+  <task name="&MAKE_LBCS_TN;{{ uscore_ensmem_name }}" cycledefs="forceast" maxtries="1">
   {% endif %}
 
     &RSRV_DEFAULT;
@@ -409,7 +405,7 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 ************************************************************************
 -->
-  <task name="&PROCESS_RADAR_REF_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}"  maxtries="1">
+  <task name="&PROCESS_RADAR_REF_TN;" cycledefs="forecast,dacycle"  maxtries="1">
 
     &RSRV_DEFAULT;
     &WALL_LIMIT_ANAL;
@@ -439,7 +435,7 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 ************************************************************************
 -->
-  <task name="&PROCESS_LIGHTNING_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}"  maxtries="1">
+  <task name="&PROCESS_LIGHTNING_TN;" cycledefs="forecast,dacycle"  maxtries="1">
 
     &RSRV_DEFAULT;
     &WALL_LIMIT_ANAL;
@@ -469,7 +465,7 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 ************************************************************************
 -->
-  <task name="&PROCESS_BUFR_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}"  maxtries="1">
+  <task name="&PROCESS_BUFR_TN;" cycledefs="forecast,dacycle"  maxtries="1">
 
     &RSRV_DEFAULT;
     &WALL_LIMIT_ANAL;
@@ -499,7 +495,7 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 ************************************************************************
 -->
-  <task name="&ANAL_GSI_INPUT_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="2">
+  <task name="&ANAL_GSI_INPUT_TN;" cycledefs="forecast" maxtries="2">
 
     &RSRV_DEFAULT;
     &WALL_LIMIT_ANAL;
@@ -531,7 +527,7 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 ************************************************************************
 -->
-  <task name="&ANAL_GSI_RESTA_TN;" cycledefs="{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}" maxtries="2">
+  <task name="&ANAL_GSI_RESTA_TN;" cycledefs="dacycle" maxtries="2">
 
     &RSRV_DEFAULT;
     &WALL_LIMIT_ANAL;
@@ -564,7 +560,7 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 ************************************************************************
 -->
-  <task name="&RADAR_REFL2TTEN_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}"  maxtries="1">
+  <task name="&RADAR_REFL2TTEN_TN;" cycledefs="forecast,dacycle"  maxtries="1">
 
     &RSRV_DEFAULT;
     &WALL_LIMIT_ANAL;
@@ -601,7 +597,7 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 ************************************************************************
 -->
-  <task name="&CLDANL_NOVAR_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}"  maxtries="1">
+  <task name="&CLDANL_NOVAR_TN;" cycledefs="forecast,dacycle"  maxtries="1">
 
     &RSRV_DEFAULT;
     &WALL_LIMIT_ANAL;
@@ -637,9 +633,9 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 -->
 {%- if do_dacycle %}
-  <task name="&RUN_FCST_TN;{{ uscore_ensmem_name }}" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}" maxtries="1">
+  <task name="&RUN_FCST_TN;{{ uscore_ensmem_name }}" cycledefs="forecast,dacycle" maxtries="1">
 {% else %}
-  <task name="&RUN_FCST_TN;{{ uscore_ensmem_name }}" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="1">
+  <task name="&RUN_FCST_TN;{{ uscore_ensmem_name }}" cycledefs="forecast" maxtries="1">
 {% endif %}
 
     &RSRV_FCST;
@@ -690,9 +686,9 @@ MODULES_RUN_TASK_FP script.
     <var name="fhr"> {% for h in range(0, fcst_len_hrs+1) %}{{ " %03d" % h  }}{% endfor %} </var>
 
 {%- if do_dacycle %}
-    <task name="&RUN_POST_TN;{{ uscore_ensmem_name }}_f#fhr#" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}" maxtries="1">
+    <task name="&RUN_POST_TN;{{ uscore_ensmem_name }}_f#fhr#" cycledefs="forecast,dacycle" maxtries="1">
 {% else %}
-    <task name="&RUN_POST_TN;{{ uscore_ensmem_name }}_f#fhr#" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="1">
+    <task name="&RUN_POST_TN;{{ uscore_ensmem_name }}_f#fhr#" cycledefs="forecast" maxtries="1">
 {% endif %}
 
       &RSRV_DEFAULT;
@@ -739,9 +735,9 @@ MODULES_RUN_TASK_FP script.
     <var name="fhr"> {% for h in range(0, fcst_len_hrs+1) %}{{ " %03d" % h  }}{% endfor %} </var>
 
 {%- if do_dacycle %}
-    <task name="&RUN_NCL_TN;_#fhr#" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}{% for dacycl_hr in dacycl_hrs %}{{ dacycl_hr }}Z,{% endfor %}" maxtries="2">
+    <task name="&RUN_NCL_TN;_#fhr#" cycledefs="forecast,dacycle" maxtries="2">
 {% else %}
-    <task name="&RUN_NCL_TN;_#fhr#" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="2">
+    <task name="&RUN_NCL_TN;_#fhr#" cycledefs="forecast" maxtries="2">
 {% endif %}
 
       &RSRV_DEFAULT;
@@ -775,7 +771,11 @@ MODULES_RUN_TASK_FP script.
 
     <var name="fhr"> {% for h in range(0, fcst_len_hrs+1) %}{{ " %03d" % h  }}{% endfor %} </var>
 
-    <task name="&RUN_NCL_ZIP_TN;_#fhr#" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="2">
+{%- if do_dacycle %}
+    <task name="&RUN_NCL_ZIP_TN;_#fhr#" cycledefs="forecast,dacycle" maxtries="2">
+{% else %}
+    <task name="&RUN_NCL_ZIP_TN;_#fhr#" cycledefs="forecast" maxtries="2">
+{% endif %}
 
       &RSRV_DEFAULT;
       &WALL_LIMIT_GRAPHICS;
@@ -805,7 +805,7 @@ MODULES_RUN_TASK_FP script.
 ************************************************************************
 ************************************************************************
 -->
-  <task name="&CLEAN_TN;" cycledefs="{% for cycl_hr in cycl_hrs %}{{ cycl_hr }}Z,{% endfor %}" maxtries="1">
+  <task name="&CLEAN_TN;" cycledefs="forecast" maxtries="1">
 
     &RSRV_DEFAULT;
 
